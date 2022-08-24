@@ -1,0 +1,3 @@
+[submodule "ecal/stl_to_gdml"]
+	path = ecal/stl_to_gdml
+	url = https://github.com/tihonav/cad-to-geant4-converter
