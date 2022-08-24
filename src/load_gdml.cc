@@ -106,7 +106,7 @@ int main(int argc,char **argv) {
   //parser.SetStripFlag(false);
 
   parser.SetOverlapCheck(true);
-  parser.Read(input_gdml.c_str());
+  parser.Read(input_gdml.c_str(),true);
 
   auto* runManager = G4RunManagerFactory::CreateRunManager();
 
@@ -143,7 +143,7 @@ int main(int argc,char **argv) {
   //
   ////////////////////////////////////////////////////////////////////////
 
-  runManager->BeamOn(0);
+  //runManager->BeamOn(0);
 
   if (not batch_macro.empty()) { // user gives G4 macro, don't be interactive
     G4String command = "/control/execute ";
