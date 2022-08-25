@@ -49,6 +49,7 @@
 #include "G01DetectorConstruction.hh"
 #include "G01ActionInitialization.hh"
 #include "VisAttributesStore.hh"
+#include "G4Session.hh"
 
 #include "FTFP_BERT.hh"
 
@@ -99,6 +100,9 @@ int main(int argc,char **argv) {
   }
 
   // command line arguments have been parsed
+  
+  // Get the pointer to the User Interface manager
+  G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
   G4GDMLParser parser;
 
@@ -106,7 +110,14 @@ int main(int argc,char **argv) {
   //parser.SetStripFlag(false);
 
   parser.SetOverlapCheck(true);
-  parser.Read(input_gdml.c_str(),true);
+  
+  {
+    // redirect printouts to parsing log files
+    LoggedSession sesh("gdml_parse.out","gdml_parse.err");
+    UImanager->SetCoutDestination(&sesh);
+    parser.Read(input_gdml.c_str(),true);
+    UImanager->SetCoutDestination(NULL);
+  }
 
   auto* runManager = G4RunManagerFactory::CreateRunManager();
 
@@ -121,8 +132,6 @@ int main(int argc,char **argv) {
   G4VisManager* visManager = new G4VisExecutive;
   visManager->Initialize();
 
-  // Get the pointer to the User Interface manager
-  G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
   ///////////////////////////////////////////////////////////////////////
   //

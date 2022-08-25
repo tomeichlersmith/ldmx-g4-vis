@@ -31,6 +31,7 @@ add_executable(load_gdml
   src/G01ActionInitialization.cc
   src/G01PrimaryGeneratorAction.cc
   src/VisAttributesStore.cc
+  src/G4Session.cc
   )
 target_link_libraries(load_gdml ${Geant4_LIBRARIES})
 install(TARGETS load_gdml DESTINATION bin)
