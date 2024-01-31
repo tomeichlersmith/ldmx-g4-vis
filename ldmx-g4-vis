@@ -1,0 +1,86 @@
+#!/bin/sh
+
+set -o errexit
+set -o nounset
+set -o xtrace
+
+usage() {
+  cat <<\HELP
+ ldmx-g4-vis [-h|--help] [--image IMAGE] [PATH]
+
+ ARGUMENTS
+  PATH : path to GDML file to visualize or a directory
+         containing GDML files to visualize. If a directory,
+         assume that we should start with the file PATH/detector.gdml.
+         If not provided, just attempt to visualize detector.gdml
+         in the current directory.
+
+ OPTIONS
+  -h,--help : print this help and exit
+  --image   : use IMAGE when launching the container.
+              Default IMAGE is ldmx-g4-vis so this flag can be avoided
+              if the image is built with `docker build . --tag ldmx-g4-vis`.
+HELP
+}
+
+image="ldmx-g4-vis"
+path=""
+while [ "$#" -gt "0" ]; do
+  case "$1" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --image)
+      shift
+      if [ "$#" -eq "0" ]; then
+        usage
+        echo "--image requires an argument after it."
+        exit 1
+      fi
+      image="$1"
+      ;;
+    *)
+      if [ -z "${path}" ]; then
+        path="$1"
+      else
+        usage
+        echo "ERROR: Cannot visualize more than one PATH at once."
+        exit 1
+      fi
+      ;;
+  esac
+  shift
+done
+
+# handle nothing-provided case
+if [ -z "${path}" ]; then
+  path="${PWD}"
+fi
+
+# deduce filename and directory to run from
+filename="detector.gdml"
+if [ -f "${path}" ]; then
+  filename="$(basename "${path}")"
+  path="$(dirname "${path}")"
+elif [ -d "${path}" ]; then
+  :
+else
+  echo "PATH ${path} is not a file or a directory."
+  exit 2
+fi
+
+path="$(cd "${path}" && pwd -P)"
+
+# path is now directory to run from
+docker \
+  run \
+  --rm \
+  --interactive \
+  --tty \
+  --env DISPLAY \
+  --volume "${TMPDIR:-/tmp}:${TMPDIR:-/tmp}" \
+  --volume "${path}:${path}" \
+  --workdir "${path}" \
+  --user "$(id -u "${USER}"):$(id -g "${USER}")" \
+  "${image}" "${filename}"
